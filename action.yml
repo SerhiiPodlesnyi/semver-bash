@@ -16,11 +16,8 @@ inputs:
   semver:
     description: 'Type of version number (major, minor, patch)'
     required: true
-outputs:
-  time:
-    description: 'Version is updated. Tag is created.'
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args:
-    - ${{ inputs.who-to-greet }}
+  using: "composite"
+  steps:
+    - run: deploy_by_tag.sh
+      shell: bash
