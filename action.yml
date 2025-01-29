@@ -19,5 +19,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: ./deploy_by_tag.sh
+    - run: bash ${{ github.action_path }}/deploy_by_tag.sh
       shell: bash
+      env:
+        repo_owner: ${{ inputs.repo_owner }}
+        repo_name: ${{ inputs.repo_name }}
+        github_token: ${{ inputs.github_token }}
+        type: ${{ inputs.type }}
+        semver: ${{ inputs.semver }}
