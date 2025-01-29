@@ -1,0 +1,26 @@
+name: 'SemVer Action'
+description: 'Increase '
+inputs:
+  repo_owner:
+    description: 'Name github repo owner or organization'
+    required: true
+  repo_name:
+    description: 'Name github repo'
+    required: true
+  github_token:
+    description: 'Github token for making POST api request'
+    required: true
+  type:
+    description: 'Type of version statement owner (helm or nodejs)'
+    required: true
+  semver:
+    description: 'Type of version number (major, minor, patch)'
+    required: true
+outputs:
+  time:
+    description: 'Version is updated. Tag is created.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.who-to-greet }}
