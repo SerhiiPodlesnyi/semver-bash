@@ -19,5 +19,5 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - run: deploy_by_tag.sh
+    - run: ./deploy_by_tag.sh
       shell: bash
