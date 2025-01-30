@@ -1,4 +1,4 @@
-#!/bin/env sh
+#!/bin/bash
 
 _get_version(){
   if [ $type == 'helm' ]; then
@@ -18,13 +18,13 @@ _get_version(){
 
 _increment_version() {
   local version=$current_version
-  local type=$semver
+  local semver=$semver
   
   local major=$(echo "$version" | cut -d. -f1)
   local minor=$(echo "$version" | cut -d. -f2)
   local patch=$(echo "$version" | cut -d. -f3)
   
-  case $type in
+  case $semver in
       "major")
           echo "$((major + 1)).0.0"
           ;;
@@ -57,11 +57,11 @@ _create_tag() {
   fi
 }
 
-# # Checking the availability of parameters
-# if [ -z "$repo_owner" ] || [ -z "$repo_name" ] || [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
-#   echo "One or more parameters are missing. Make sure that all parameters are passed: repo_owner, repo_name, github_token, type, semver"
-#   exit 1
-# fi
+# Checking the availability of parameters
+if [ -z "$repo_owner" ] || [ -z "$repo_name" ] || [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
+  echo "One or more parameters are missing. Make sure that all parameters are passed: repo_owner, repo_name, github_token, type, semver"
+  exit 1
+fi
 
 current_version=$(_get_version)
 echo "Current version: $current_version"
