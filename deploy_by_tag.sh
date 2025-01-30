@@ -88,16 +88,26 @@ _commit_and_push() {
   file_to_update=$(realpath --relative-to="$GITHUB_WORKSPACE" "$file_to_update")
   echo "Updated version in $file_to_update to $tag"
 
-  # Commit changes
+  # Отримуємо SHA файлу
+  file_sha=$(curl -s -H "Authorization: token $github_token" \
+                     -H "Accept: application/vnd.github.v3+json" \
+                     https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update | jq -r '.sha // empty')
+
+  if [ -z "$file_sha" ]; then
+    file_sha=null
+  fi
+
+  echo "Using file SHA: $file_sha"
+
   commit_message="Bump version to $tag"
-  response=$(curl -X POST \
+  response=$(curl -X PUT \
     -H "Authorization: token $github_token" \
     -H "Accept: application/vnd.github.v3+json" \
     https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update \
     -d "{
       \"message\": \"$commit_message\",
       \"content\": \"$(base64 -w 0 < $file_to_update)\",
-      \"sha\": \"$(curl -s -H \"Authorization: token $github_token\" -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update | jq -r '.sha')\"
+      \"sha\": $file_sha
     }")
 
   if echo "$response" | grep -q '"commit"'; then
@@ -107,6 +117,7 @@ _commit_and_push() {
     exit 1
   fi
 }
+
 
 # Checking the availability of parameters
 if [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
