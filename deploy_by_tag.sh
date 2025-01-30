@@ -3,10 +3,10 @@
 _get_version(){
   if [ $type == 'helm' ]; then
     file_to_update=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
-    echo ${version=$(yq '.version' < $file_name)}
+    echo ${version=$(yq '.version' < $file_to_update)}
   elif [ $type == 'nodejs' ]; then
     file_to_update=$(find $GITHUB_WORKSPACE -iname "package.json")
-    echo ${version=$(jq '.version' ./package.json | xargs echo)}
+    echo ${version=$(jq '.version' $file_to_update | xargs echo)}
   else
     echo "Unsupported project type: $type"
     exit 1
