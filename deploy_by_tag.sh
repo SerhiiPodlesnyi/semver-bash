@@ -58,6 +58,12 @@ if [ -z "$repo_owner" ] || [ -z "$repo_name" ] || [ -z "$github_token" ] || [ -z
   exit 1
 fi
 
+wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
+
+wget -O jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 &&\
+    chmod +x ./jq
+
 current_version=$(_get_version)
 echo $current_version
 
@@ -67,6 +73,5 @@ if ! [[ $current_version =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 tag=$(_increment_version)
-_increment_version
 
 _create_tag

@@ -1,5 +1,5 @@
 name: 'SemVer Action'
-description: 'Increase '
+description: 'Increase SemVer'
 inputs:
   repo_owner:
     description: 'Name github repo owner or organization'
@@ -17,7 +17,7 @@ inputs:
     description: 'Type of version number (major, minor, patch)'
     required: true
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Install yq
       uses: Makepad-fr/setup-yq-action@v1.0.0
@@ -29,7 +29,14 @@ runs:
       with:
           version: '1.7'
 
-    - run: bash ${{ github.action_path }}/deploy_by_tag.sh
+    - name: Set GitHub Path
+      run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+      shell: bash
+      env:
+        GITHUB_ACTION_PATH: ${{ github.action_path }}
+
+    - name: Run updater
+      run: deploy_by_tag.sh
       shell: bash
       env:
         repo_owner: ${{ inputs.repo_owner }}
