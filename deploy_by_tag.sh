@@ -2,11 +2,11 @@
 
 _get_version(){
   if [ $type == 'helm' ]; then
-    file_to_update=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
-    echo ${version=$(yq '.version' < $file_to_update)}
+    file_name=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
+    echo ${version=$(yq '.version' < $file_name)}
   elif [ $type == 'nodejs' ]; then
-    file_to_update=$(find $GITHUB_WORKSPACE -iname "package.json")
-    echo ${version=$(jq '.version' $file_to_update | xargs echo)}
+    file_name=$(find $GITHUB_WORKSPACE -iname "package.json")
+    echo ${version=$(jq '.version' $file_name | xargs echo)}
   else
     echo "Unsupported project type: $type"
     exit 1
@@ -71,18 +71,18 @@ _create_tag() {
 }
 
 _commit_and_push() {
-  echo "Updated version in $file_to_update to $tag"
+  echo "Updated version in $file_name to $tag"
 
   # Commit changes
   commit_message="Bump version to $tag"
   response=$(curl -X POST \
     -H "Authorization: token $github_token" \
     -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update \
+    https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_name \
     -d "{
       \"message\": \"$commit_message\",
-      \"content\": \"$(base64 -w 0 < $file_to_update)\",
-      \"sha\": \"$(curl -s -H \"Authorization: token $github_token\" -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update | jq -r '.sha')\"
+      \"content\": \"$(base64 -w 0 < $file_name)\",
+      \"sha\": \"$(curl -s -H \"Authorization: token $github_token\" -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_name | jq -r '.sha')\"
     }")
 
   if echo "$response" | grep -q '"commit"'; then
