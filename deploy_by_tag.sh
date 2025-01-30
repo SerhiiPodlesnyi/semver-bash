@@ -4,13 +4,9 @@ _get_version(){
   if [ $type == 'helm' ]; then
     local file_name=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
     echo ${version=$(yq '.version' < $file_name)}
-    echo "File: $file_name"
-    echo "Version: $version"
   elif [ $type == 'nodejs' ]; then
     local file_name=$(find $GITHUB_WORKSPACE -iname "package.json")
     echo ${version=$(jq '.version' ./package.json | xargs echo)}
-    echo "File: $file_name"
-    echo "Version: $version"
   else
     echo "Current version not found"
   fi
