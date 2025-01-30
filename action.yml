@@ -35,6 +35,10 @@ runs:
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
 
+    - name: Make script executble 
+      run: chmod +x deploy_by_tag.sh
+      shell: bash
+
     - name: Run updater
       run: deploy_by_tag.sh
       shell: bash
