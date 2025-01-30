@@ -4,9 +4,13 @@ _get_version(){
   if [ $type == 'helm' ]; then
     local file_name=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
     echo ${version=$(yq '.version' < $file_name)}
+    echo "File: $file_name"
+    echo "Version: $version"
   elif [ $type == 'nodejs' ]; then
     local file_name=$(find $GITHUB_WORKSPACE -iname "package.json")
     echo ${version=$(jq '.version' ./package.json | xargs echo)}
+    echo "File: $file_name"
+    echo "Version: $version"
   else
     echo "Current version not found"
   fi
@@ -53,11 +57,11 @@ _create_tag() {
   fi
 }
 
-# Checking the availability of parameters
-if [ -z "$repo_owner" ] || [ -z "$repo_name" ] || [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
-  echo "One or more parameters are missing. Make sure that all parameters are passed: repo_owner, repo_name, github_token, type, semver"
-  exit 1
-fi
+# # Checking the availability of parameters
+# if [ -z "$repo_owner" ] || [ -z "$repo_name" ] || [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
+#   echo "One or more parameters are missing. Make sure that all parameters are passed: repo_owner, repo_name, github_token, type, semver"
+#   exit 1
+# fi
 
 current_version=$(_get_version)
 echo "Current version: $current_version"
