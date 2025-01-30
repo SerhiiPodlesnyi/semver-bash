@@ -16,8 +16,9 @@ _increment_version() {
   local version=$current_version
   local type=$semver
   
-  # Розбиваємо версію на компоненти
-  IFS='.' read -r major minor patch <<< "$version"
+  local major=$(echo "$version" | cut -d. -f1)
+  local minor=$(echo "$version" | cut -d. -f2)
+  local patch=$(echo "$version" | cut -d. -f3)
   
   case $type in
       "major")
@@ -31,7 +32,7 @@ _increment_version() {
           ;;
       *)
           echo "Error: Unknown version type. Use: major, minor, or patch" >&2
-          exit 1
+          return 1
           ;;
   esac
 }
