@@ -75,10 +75,10 @@ _commit_and_push() {
   local file_to_update
 
   if [ "$type" == "helm" ]; then
-    file_to_update=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
+    file_to_update=$(find "$GITHUB_WORKSPACE" -iname "Chart.yaml")
     yq -i ".version = \"$tag\"" "$file_to_update"
   elif [ "$type" == "nodejs" ]; then
-    file_to_update=$(find $GITHUB_WORKSPACE -iname "package.json")
+    file_to_update=$(find "$GITHUB_WORKSPACE" -iname "package.json")
     jq ".version = \"$tag\"" "$file_to_update" > temp.json && mv temp.json "$file_to_update"
   else
     echo "Unsupported project type: $type"
@@ -91,22 +91,25 @@ _commit_and_push() {
   # Отримуємо SHA файлу
   file_sha=$(curl -s -H "Authorization: token $github_token" \
                      -H "Accept: application/vnd.github.v3+json" \
-                     https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update | jq -r '.sha // empty')
+                     "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update" | jq -r '.sha // empty')
 
-  if [ -z "$file_sha" ]; then
+  if [ -z "$file_sha" ] || [ "$file_sha" == "null" ]; then
     file_sha=null
+  else
+    file_sha="\"$file_sha\""
   fi
 
-  echo "Using file SHA: $file_sha"
+  # Конвертація файлу у base64 без переносу рядків
+  file_content=$(base64 "$file_to_update" | tr -d '\n')
 
   commit_message="Bump version to $tag"
   response=$(curl -X PUT \
     -H "Authorization: token $github_token" \
     -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update \
+    "https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update" \
     -d "{
       \"message\": \"$commit_message\",
-      \"content\": \"$(base64 -w 0 < $file_to_update)\",
+      \"content\": \"$file_content\",
       \"sha\": $file_sha
     }")
 
