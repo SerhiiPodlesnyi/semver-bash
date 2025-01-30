@@ -1,11 +1,12 @@
 #!/bin/bash
 
 _get_version(){
+  local file_name
   if [ $type == 'helm' ]; then
-    echo ${file_name=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")}
+    file_name=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
     echo ${version=$(yq '.version' < $file_name)}
   elif [ $type == 'nodejs' ]; then
-    echo ${file_name=$(find $GITHUB_WORKSPACE -iname "package.json")}
+    file_name=$(find $GITHUB_WORKSPACE -iname "package.json")
     echo ${version=$(jq '.version' $file_name | xargs echo)}
   else
     echo "Unsupported project type: $type"
@@ -71,18 +72,31 @@ _create_tag() {
 }
 
 _commit_and_push() {
-  echo "Updated version in $file_name to $tag"
+  local file_to_update
+
+  if [ "$type" == "helm" ]; then
+    file_to_update=$(find $GITHUB_WORKSPACE -iname "Chart.yaml")
+    yq -i ".version = \"$tag\"" "$file_to_update"
+  elif [ "$type" == "nodejs" ]; then
+    file_to_update=$(find $GITHUB_WORKSPACE -iname "package.json")
+    jq ".version = \"$tag\"" "$file_to_update" > temp.json && mv temp.json "$file_to_update"
+  else
+    echo "Unsupported project type: $type"
+    exit 1
+  fi
+
+  echo "Updated version in $file_to_update to $tag"
 
   # Commit changes
   commit_message="Bump version to $tag"
   response=$(curl -X POST \
     -H "Authorization: token $github_token" \
     -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_name \
+    https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update \
     -d "{
       \"message\": \"$commit_message\",
-      \"content\": \"$(base64 -w 0 < $file_name)\",
-      \"sha\": \"$(curl -s -H \"Authorization: token $github_token\" -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_name | jq -r '.sha')\"
+      \"content\": \"$(base64 -w 0 < $file_to_update)\",
+      \"sha\": \"$(curl -s -H \"Authorization: token $github_token\" -H \"Accept: application/vnd.github.v3+json\" https://api.github.com/repos/$GITHUB_REPOSITORY/contents/$file_to_update | jq -r '.sha')\"
     }")
 
   if echo "$response" | grep -q '"commit"'; then
