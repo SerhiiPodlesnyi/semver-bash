@@ -85,10 +85,10 @@ _commit_and_push() {
     exit 1
   fi
 
+  file_to_update=$(realpath --relative-to="$GITHUB_WORKSPACE" "$file_to_update")
   echo "Updated version in $file_to_update to $tag"
 
   # Commit changes
-  file_to_update=$(realpath --relative-to="$GITHUB_WORKSPACE" "$file_to_update")
   commit_message="Bump version to $tag"
   response=$(curl -X POST \
     -H "Authorization: token $github_token" \
