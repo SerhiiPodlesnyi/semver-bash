@@ -39,38 +39,6 @@ _increment_version() {
   esac
 }
 
-_save_version(){
-  response=$(curl -X POST \
-    -H "Authorization: token $github_token" \
-    -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
-    -d "{\"ref\": \"refs/tags/$GITHUB_REF\", \"sha\": \"$(git rev-parse HEAD)\"}")
-
-  # Check the status of the response
-  if echo "$response" | grep -q '"ref":'; then
-    echo "Tag successfully created: $tag"
-  else
-    echo "An error occurred while creating a tag: $response"
-    exit 1
-  fi
-}
-
-_create_tag() {
-  response=$(curl -X POST \
-    -H "Authorization: token $github_token" \
-    -H "Accept: application/vnd.github.v3+json" \
-    https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
-    -d "{\"ref\": \"refs/tags/$tag\", \"sha\": \"$(git rev-parse HEAD)\"}")
-
-  # Check the status of the response
-  if echo "$response" | grep -q '"ref":'; then
-    echo "Tag successfully created: $tag"
-  else
-    echo "An error occurred while creating a tag: $response"
-    exit 1
-  fi
-}
-
 _commit_and_push() {
   local file_to_update
 
@@ -121,10 +89,26 @@ _commit_and_push() {
   fi
 }
 
+_create_tag() {
+  response=$(curl -X POST \
+    -H "Authorization: token $github_token" \
+    -H "Accept: application/vnd.github.v3+json" \
+    https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs \
+    -d "{\"ref\": \"refs/tags/$tag\", \"sha\": \"$(git rev-parse HEAD)\"}")
+
+  # Check the status of the response
+  if echo "$response" | grep -q '"ref":'; then
+    echo "Tag successfully created: $tag"
+  else
+    echo "An error occurred while creating a tag: $response"
+    exit 1
+  fi
+}
+
 
 # Checking the availability of parameters
 if [ -z "$github_token" ] || [ -z "$type" ] || [ -z "$semver" ]; then
-  echo "One or more parameters are missing. Make sure that all parameters are passed: repo_owner, repo_name, github_token, type, semver"
+  echo "One or more parameters are missing. Make sure that all parameters are passed: github_token, type, semver"
   exit 1
 fi
 
